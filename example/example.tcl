@@ -1,5 +1,10 @@
 package require fcgi
 
+if {[llength $argv] != 1} {
+    puts stderr "Usage: example.tcl <path_or_port>"
+    exit
+}
+
 set sock [fcgi::OpenSocket :9999 1]
 fcgi::Init
 set req [fcgi::InitRequest $sock {}]
@@ -7,10 +12,18 @@ set req [fcgi::InitRequest $sock {}]
 while {1} {
     puts "### Accepr_r #############################################################################"
     fcgi::Accept_r $req
-    puts "req = $req"
+    puts $req
     puts "### GetParam #############################################################################"
-    puts [fcgi::GetParam $req]
-    puts "### PutStr ###############################################################################"
+    set pd [fcgi::GetParam $req]
+    dict for {k v} $pd {
+	puts "$k=$v"
+    }
+    puts "### GetStr ###############################################################################"
+    set content ""
+    if {[dict exists $pd "CONTENT_LENGTH"] && [string is integer -strict [dict get $pd "CONTENT_LENGTH"]] && [dict get $pd "CONTENT_LENGTH"] > 0} {
+	set content [fcgi::GetStr $req stdin [dict get $pd "CONTENT_LENGTH"]]
+	puts $content
+    }
     puts "### PutStr ###############################################################################"
     set C "Status: 200 OK
 Content-Type: text/html
@@ -21,16 +34,13 @@ Content-Type: text/html
 <h2>Parameters<h2>
 <table>
 "
-    set pd [fcgi::GetParam $req]
     dict for {k v} $pd {
 	append C "<tr><td>$k</td><td>$v</td></tr>\n"
     }
     append C "</table>
 <h2>Body</h2>
 <pre>"
-    if {[dict exists $pd "CONTENT_LENGTH"] && [string is integer -strict [dict get $pd "CONTENT_LENGTH"]] && [dict get $pd "CONTENT_LENGTH"] > 0} {
-	append C [fcgi::GetStr $req stdin [dict get $pd "CONTENT_LENGTH"]]
-    }
+    append C $content
     append C "</pre>\n</body>\n</html>\n"
     fcgi::PutStr $req stdout $C
     puts "### Finish_r #############################################################################"
