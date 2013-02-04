@@ -1,0 +1,15 @@
+package require tcltest
+set auto_path [list ../lib {*}$auto_path]
+package require fcgi
+
+tcltest::test Accept_r-1 {fcgi Accept_r} -body {
+    fcgi::Accept_r
+} -returnCodes {error} -result {wrong # args: should be "fcgi::Accept_r request"}
+
+tcltest::test Accept_r-1 {fcgi Accept_r} -body {
+    fcgi::Accept_r a
+} -returnCodes {error} -result {request "a" does not exists}
+
+# cleanup
+::tcltest::cleanupTests
+return

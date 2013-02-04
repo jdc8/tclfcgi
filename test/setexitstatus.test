@@ -1,0 +1,31 @@
+package require tcltest
+set auto_path [list ../lib {*}$auto_path]
+package require fcgi
+
+set fcgi_socket [fcgi::OpenSocket :9999 5]
+fcgi::Init
+set req [fcgi::InitRequest $fcgi_socket b]
+
+tcltest::test SetExitStatus-1 {fcgi SetExitStatus} -body {
+    fcgi::SetExitStatus
+} -returnCodes {error} -result {wrong # args: should be "fcgi::SetExitStatus request stream status"}
+
+tcltest::test SetExitStatus-2 {fcgi SetExitStatus} -body {
+    fcgi::SetExitStatus a b c
+} -returnCodes {error} -result {request "a" does not exists}
+
+tcltest::test SetExitStatus-3 {fcgi SetExitStatus} -body {
+    fcgi::SetExitStatus $req b c
+} -returnCodes {error} -result {Wrong status argument, expected integer}
+
+tcltest::test SetExitStatus-4 {fcgi SetExitStatus} -body {
+    fcgi::SetExitStatus $req b 0
+} -returnCodes {error} -result {Unknow stream specified}
+
+# cleanup
+
+fcgi::Free $req 1
+fcgi::CloseSocket $fcgi_socket
+
+::tcltest::cleanupTests
+return

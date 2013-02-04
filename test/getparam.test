@@ -1,0 +1,23 @@
+package require tcltest
+set auto_path [list ../lib {*}$auto_path]
+package require fcgi
+
+tcltest::test GetParam-1 {fcgi GetParam} -body {
+    fcgi::GetParam
+} -returnCodes {error} -result {wrong # args: should be "fcgi::GetParam request ?name?"}
+
+tcltest::test GetParam-2 {fcgi GetParam} -body {
+    fcgi::GetParam a
+} -returnCodes {error} -result {request "a" does not exists}
+
+tcltest::test GetParam-3 {fcgi GetParam} -body {
+    fcgi::GetParam a
+} -returnCodes {error} -result {request "a" does not exists}
+
+tcltest::test GetParam-4 {fcgi GetParam} -body {
+    fcgi::GetParam a b c
+} -returnCodes {error} -result {wrong # args: should be "fcgi::GetParam request ?name?"}
+
+# cleanup
+::tcltest::cleanupTests
+return

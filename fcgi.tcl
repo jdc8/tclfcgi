@@ -78,11 +78,17 @@ critcl::ccode {
 	return fqn;
     }
 
-    static FCGX_Request* known_request(FCGXClientData* cd, Tcl_Obj* obj)
+    static FCGX_Request* known_request(Tcl_Interp* ip, FCGXClientData* cd, Tcl_Obj* obj)
     {
 	Tcl_HashEntry* hashEntry = Tcl_FindHashEntry(cd->requests, Tcl_GetStringFromObj(obj, 0));
-	if (!hashEntry)
+	if (!hashEntry) {
+	    Tcl_Obj* err = Tcl_NewObj();
+	    Tcl_AppendToObj(err, "request \"", -1);
+	    Tcl_AppendObjToObj(err, obj);
+	    Tcl_AppendToObj(err, "\" does not exists", -1);
+	    Tcl_SetObjResult(ip, err);
 	    return 0;
+	}
 	return (FCGX_Request*)Tcl_GetHashValue(hashEntry);
     }
 }
@@ -112,6 +118,24 @@ critcl::ccommand ::fcgi::OpenSocket {cd ip objc objv} {
 	return TCL_ERROR;
     }
     Tcl_SetObjResult(ip, Tcl_NewIntObj(rt));
+    return TCL_OK;
+} -clientdata fcgxClientData
+
+critcl::ccommand ::fcgi::CloseSocket {cd ip objc objv} {
+    if (objc != 2) {
+	Tcl_WrongNumArgs(ip, 1, objv, "socket");
+	return TCL_ERROR;
+    }
+    int socket = 0;
+    if (Tcl_GetIntFromObj(ip, objv[1], &socket) != TCL_OK) {
+	Tcl_SetObjResult(ip, Tcl_NewStringObj("Wrong socket argument, expected integer", -1));
+	return TCL_ERROR;
+    }
+    int rt = close(socket);
+    if (rt) {
+	Tcl_SetObjResult(ip, Tcl_NewStringObj("close failed", -1));
+	return TCL_ERROR;
+    }
     return TCL_OK;
 } -clientdata fcgxClientData
 
@@ -148,15 +172,16 @@ critcl::ccommand ::fcgi::Free {cd ip objc objv} {
 	return TCL_ERROR;
     }
     FCGXClientData* ccd = (FCGXClientData*)cd;
-    FCGX_Request* request = known_request(ccd, objv[1]);
+    FCGX_Request* request = known_request(ip, ccd, objv[1]);
     if (!request)
 	return TCL_ERROR;
     int do_close = 0;
-    if (Tcl_GetIntFromObj(ip, objv[2], &do_close) != TCL_OK) {
-	Tcl_SetObjResult(ip, Tcl_NewStringObj("Wrong close argument, expected integer", -1));
+    if (Tcl_GetBooleanFromObj(ip, objv[2], &do_close) != TCL_OK) {
+	Tcl_SetObjResult(ip, Tcl_NewStringObj("Wrong close argument, expected boolean", -1));
 	return TCL_ERROR;
     }
     FCGX_Free(request, do_close);
+    ckfree((void*)request);
     return TCL_OK;
 } -clientdata fcgxClientData
 
@@ -166,7 +191,7 @@ critcl::ccommand ::fcgi::Accept_r {cd ip objc objv} {
 	return TCL_ERROR;
     }
     FCGXClientData* ccd = (FCGXClientData*)cd;
-    FCGX_Request* request = known_request(ccd, objv[1]);
+    FCGX_Request* request = known_request(ip, ccd, objv[1]);
     if (!request)
 	return TCL_ERROR;
     int rt = FCGX_Accept_r(request);
@@ -183,7 +208,7 @@ critcl::ccommand ::fcgi::Finish_r {cd ip objc objv} {
 	return TCL_ERROR;
     }
     FCGXClientData* ccd = (FCGXClientData*)cd;
-    FCGX_Request* request = known_request(ccd, objv[1]);
+    FCGX_Request* request = known_request(ip, ccd, objv[1]);
     if (!request)
 	return TCL_ERROR;
     FCGX_Finish_r(request);
@@ -196,7 +221,7 @@ critcl::ccommand ::fcgi::GetParam {cd ip objc objv} {
 	return TCL_ERROR;
     }
     FCGXClientData* ccd = (FCGXClientData*)cd;
-    FCGX_Request* request = known_request(ccd, objv[1]);
+    FCGX_Request* request = known_request(ip, ccd, objv[1]);
     if (!request)
 	return TCL_ERROR;
     if (objc == 3) {
@@ -226,7 +251,7 @@ critcl::ccommand ::fcgi::PutStr {cd ip objc objv} {
 	return TCL_ERROR;
     }
     FCGXClientData* ccd = (FCGXClientData*)cd;
-    FCGX_Request* request = known_request(ccd, objv[1]);
+    FCGX_Request* request = known_request(ip, ccd, objv[1]);
     if (!request)
 	return TCL_ERROR;
     const char* stream = Tcl_GetStringFromObj(objv[2], 0);
@@ -254,10 +279,14 @@ critcl::ccommand ::fcgi::GetStr {cd ip objc objv} {
 	return TCL_ERROR;
     }
     FCGXClientData* ccd = (FCGXClientData*)cd;
-    FCGX_Request* request = known_request(ccd, objv[1]);
+    FCGX_Request* request = known_request(ip, ccd, objv[1]);
     if (!request)
 	return TCL_ERROR;
     const char* stream = Tcl_GetStringFromObj(objv[2], 0);
+    if (strcmp(stream, "stdin")) {
+	Tcl_SetObjResult(ip, Tcl_NewStringObj("Unknow stream specified", -1));
+	return TCL_ERROR;
+    }
     int n = 0;
     if (Tcl_GetIntFromObj(ip, objv[3], &n) != TCL_OK) {
 	Tcl_SetObjResult(ip, Tcl_NewStringObj("Wrong n argument, expected integer", -1));
@@ -278,7 +307,7 @@ critcl::ccommand ::fcgi::SetExitStatus {cd ip objc objv} {
 	return TCL_ERROR;
     }
     FCGXClientData* ccd = (FCGXClientData*)cd;
-    FCGX_Request* request = known_request(ccd, objv[1]);
+    FCGX_Request* request = known_request(ip, ccd, objv[1]);
     if (!request)
 	return TCL_ERROR;
     const char* stream = Tcl_GetStringFromObj(objv[2], 0);

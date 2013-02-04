@@ -1,0 +1,35 @@
+package require tcltest
+set auto_path [list ../lib {*}$auto_path]
+package require fcgi
+
+set fcgi_socket [fcgi::OpenSocket :9999 5]
+fcgi::Init
+
+tcltest::test InitRequest-1 {fcgi FreeRequest} -body {
+    fcgi::Free
+} -returnCodes {error} -result {wrong # args: should be "fcgi::Free request close"}
+
+tcltest::test InitRequest-2 {fcgi FreeRequest} -body {
+    fcgi::Free 1 2
+} -returnCodes {error} -result {request "1" does not exists}
+
+tcltest::test InitRequest-3 {fcgi FreeRequest} -setup {
+    set req [fcgi::InitRequest $fcgi_socket b]
+} -body {
+    fcgi::Free $req a
+} -cleanup {
+    fcgi::Free $req 1
+} -returnCodes {error} -result {Wrong close argument, expected boolean}
+
+tcltest::test InitRequest-4 {fcgi FreeRequest} -setup {
+    set req [fcgi::InitRequest $fcgi_socket b]
+} -body {
+    fcgi::Free $req 1
+} -returnCodes {ok} -result {}
+
+# cleanup
+
+fcgi::CloseSocket $fcgi_socket
+
+::tcltest::cleanupTests
+return

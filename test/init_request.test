@@ -1,0 +1,32 @@
+package require tcltest
+set auto_path [list ../lib {*}$auto_path]
+package require fcgi
+
+set fcgi_socket [fcgi::OpenSocket :9999 5]
+fcgi::Init
+
+tcltest::test InitRequest-1 {fcgi InitRequest} -body {
+    fcgi::InitRequest
+} -returnCodes {error} -result {wrong # args: should be "fcgi::InitRequest socket flags"}
+
+tcltest::test InitRequest-2 {fcgi InitRequest} -body {
+    fcgi::InitRequest 1 2 3
+} -returnCodes {error} -result {wrong # args: should be "fcgi::InitRequest socket flags"}
+
+tcltest::test InitRequest-2 {fcgi InitRequest} -body {
+    fcgi::InitRequest a b
+} -returnCodes {error} -result {Wrong socket argument, expected integer}
+
+tcltest::test InitRequest-2 {fcgi InitRequest} -body {
+    set req [fcgi::InitRequest $fcgi_socket b]
+    string match "::fcgi*" $req
+} -cleanup {
+    fcgi::Free $req 1
+} -returnCodes {ok} -result {1}
+
+# cleanup
+
+fcgi::CloseSocket $fcgi_socket
+
+::tcltest::cleanupTests
+return

@@ -1,0 +1,32 @@
+package require tcltest
+set auto_path [list ../lib {*}$auto_path]
+package require fcgi
+
+set fcgi_socket [fcgi::OpenSocket :9999 5]
+fcgi::Init
+set req [fcgi::InitRequest $fcgi_socket b]
+
+tcltest::test PutStr-1 {fcgi PutStr} -body {
+    fcgi::PutStr
+} -returnCodes {error} -result {wrong # args: should be "fcgi::PutStr request stream string"}
+
+tcltest::test PutStr-2 {fcgi PutStr} -body {
+    fcgi::PutStr a b c
+} -returnCodes {error} -result {request "a" does not exists}
+
+tcltest::test PutStr-3 {fcgi PutStr} -body {
+    fcgi::PutStr $req b c
+} -returnCodes {error} -result {Unknow stream specified}
+
+# Crashes if no request accepted before calling PutStr
+# tcltest::test PutStr-4 {fcgi PutStr} -body {
+#     fcgi::PutStr $req stdout c
+# } -returnCodes {ok} -result {}
+
+# cleanup
+
+fcgi::Free $req 1
+fcgi::CloseSocket $fcgi_socket
+
+::tcltest::cleanupTests
+return
