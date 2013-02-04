@@ -257,7 +257,7 @@ critcl::ccommand ::fcgi::PutStr {cd ip objc objv} {
 	return TCL_ERROR;
     const char* stream = Tcl_GetStringFromObj(objv[2], 0);
     int lstr = 0;
-    const char* str = Tcl_GetStringFromObj(objv[3], &lstr);
+    const char* str = Tcl_GetByteArrayFromObj(objv[3], &lstr);
     int rt = 0;
     if (strcmp(stream, "stdout") == 0)
 	rt = FCGX_PutStr(str, lstr, request->out);
@@ -296,7 +296,7 @@ critcl::ccommand ::fcgi::GetStr {cd ip objc objv} {
     if (n > 0) {
 	char* str = ckalloc(n);
 	int rt = FCGX_GetStr(str, n, request->in);
-	Tcl_SetObjResult(ip, Tcl_NewStringObj(str, rt));
+	Tcl_SetObjResult(ip, Tcl_NewByteArrayObj(str, rt));
 	ckfree(str);
     }
     return TCL_OK;

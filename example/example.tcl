@@ -5,7 +5,7 @@ if {[llength $argv] != 1} {
     exit
 }
 
-set sock [fcgi OpenSocket :9999 1]
+set sock [fcgi OpenSocket [lindex $argv 0] 1]
 fcgi Init
 set req [fcgi InitRequest $sock {}]
 
