@@ -51,7 +51,8 @@ if {[file exists "[file dirname [info script]]/fcgi_config.tcl"]} {
     close $fd
 }
 
-critcl::tcl 8.5
+critcl::tcl 8.6
+critcl::tsources fcgi_helper.tcl
 
 critcl::ccode {
 #include "errno.h"

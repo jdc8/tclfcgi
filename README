@@ -1,0 +1,98 @@
+Intro
+=====
+
+fcgi is a wrapper for the FastCGI library (http://www.fastcgi.com/). The wrapper
+is based on version 2.4.1 of the FastCGI library. It is written using critcl 3.
+
+The code can be found on GitHub:
+
+    https://github.com/jdc8/tclfcgi
+
+License
+=======
+
+The fcgi wrapper is relicensed under the BSD license (specifically Modified BSD
+aka New BSD aka 3-clause BSD). Check COPYING.BSD for more info.
+
+Building
+========
+
+Requirements:
+
+- FastCGI
+
+    http://www.fastcgi.com/drupal/node/5
+
+- Tcl 8.6
+
+- Critcl 3
+
+On linux and windows:
+
+- run "tclsh build.tcl"
+
+The script searches for critcl and FastCGI installation or sources.  Type "tclsh
+build.tcl --help" for more information.
+
+On Linux, the package can be linked against FastCGI statically or
+dynamicallly. Default is dynamic. Use the -static option to choose static
+linking.
+
+Usage
+=====
+
+    package require fcgi
+
+    fcgi Init
+
+        Initialize the FastCGI library
+
+    fcgi OpenSocket <path> <backlog>
+
+        Create a FastCGI listen socket. The socket file descriptor is returned.
+
+    fcgi CloseSocket <socket>
+
+        Close the specified socket.
+
+    fcgi InitRequest <socket> <flags>
+
+        Create a new request structure for the specified socket. Supported
+        flags:
+
+            - FCGI_FAIL_ON_INTR
+
+    fcgi Free <request> <close>
+
+        Free the specified request. Close the associated streams if <close> is
+        true.
+
+    fcgi Accept_r <request>
+
+        Accept a new request.
+
+    fcgi Finish_r <request>
+
+        Finish a request.
+
+    fcgi GetParam <request> ?<name>?
+
+        If <name> is specified, get the specified parameter. Otherwise return
+        all parameters.
+
+    fcgi PutStr <request> <stream> <string>
+
+        Write the string to the specified stream of the specified request. Known
+        streams are stdout and stderr.
+
+    fcgi GetStr <request> <stream> <n>
+
+        Get a string of maximum size <n> from the specified stream of the
+        specified request. Known stream is stdin.
+
+    fcgi SetExitStatus <request> <stream> <status>
+
+        Set the stream status for the specified request. Known streams os stdout
+        and stderr.
+
+

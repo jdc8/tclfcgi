@@ -5,23 +5,23 @@ if {[llength $argv] != 1} {
     exit
 }
 
-set sock [fcgi::OpenSocket :9999 1]
-fcgi::Init
-set req [fcgi::InitRequest $sock {}]
+set sock [fcgi OpenSocket :9999 1]
+fcgi Init
+set req [fcgi InitRequest $sock {}]
 
 while {1} {
     puts "### Accepr_r #############################################################################"
-    fcgi::Accept_r $req
+    fcgi Accept_r $req
     puts $req
     puts "### GetParam #############################################################################"
-    set pd [fcgi::GetParam $req]
+    set pd [fcgi GetParam $req]
     dict for {k v} $pd {
 	puts "$k=$v"
     }
     puts "### GetStr ###############################################################################"
     set content ""
     if {[dict exists $pd "CONTENT_LENGTH"] && [string is integer -strict [dict get $pd "CONTENT_LENGTH"]] && [dict get $pd "CONTENT_LENGTH"] > 0} {
-	set content [fcgi::GetStr $req stdin [dict get $pd "CONTENT_LENGTH"]]
+	set content [fcgi GetStr $req stdin [dict get $pd "CONTENT_LENGTH"]]
 	puts $content
     }
     puts "### PutStr ###############################################################################"
@@ -42,8 +42,8 @@ Content-Type: text/html
 <pre>"
     append C $content
     append C "</pre>\n</body>\n</html>\n"
-    fcgi::PutStr $req stdout $C
+    fcgi PutStr $req stdout $C
     puts "### Finish_r #############################################################################"
-    fcgi::SetExitStatus $req stdout 0
-    fcgi::Finish_r $req
+    fcgi SetExitStatus $req stdout 0
+    fcgi Finish_r $req
 }
