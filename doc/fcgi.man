@@ -1,0 +1,109 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin fcgi n 1.0.0]
+[copyright {Jos Decoster <jos.decoster@gmail.com>}]
+[moddesc {A Tcl wrapper for the FastCGI library}]
+[category  {cgi}]
+[keywords {cgi fcgi fastcgi}]
+[titledesc {fcgi Package Reference}]
+[require Tcl 8.6]
+[require critcl [opt 3]]
+[description]
+
+The [term fcgi] package is a wrapper for the [uri {http://www.fastcgi.com} {FastCGI library}].
+The wrapper is based on version 2.4.1 of the FastCGI library. It is written
+using critcl 3.
+
+[para]
+
+The package tries to stay close to the C calls in the FastCGI library application server
+API. Consult the [uri {http://www.fastcgi.com/drupal/node/6} {FastCGI library documentations}]
+for more details about the wrapped API functions and data structures.
+
+[para]
+
+The [term fcgi] package code can be found on [uri {http://github.com/jdc8/tclfcgi} GitHub].
+
+
+[section "[term fcgi] commands"]
+
+[list_begin definitions]
+
+[call [cmd fcgi] [cmd Init]]
+
+Initialize the FCGX library. Must be called before calling the [cmd Accept_r] command.
+
+[call [cmd fcgi] [cmd OpenSocket] [arg path] [opt [arg backlog]]]
+
+Create a FastCGI listen socket.
+
+[para] The [arg path] arguments can be a Unix domain
+socket, a Windows named pipe, or a colon followed by a port number.
+
+[para] The [arg backlog] argument is the listen queue depth used in the [term listen()] call. Default value is 5.
+
+[para] The socket file descriptor is returned.
+
+[call [cmd fcgi] [cmd CloseSocket] [arg socket]]
+
+Close the FastCGI listen socket.
+
+[call [cmd fcgi] [cmd InitRequest] [arg socket] [opt [arg flags]]]
+
+Initialize a [term FCGX_Request] structure for use with [cmd Accept_r].
+
+[para] The [arg socket] argument is the file descriptor as returned by the [cmd OpenSocket] command.
+
+[para] the [arg flags] argument is specified as an integer. Default value is 0.
+
+[para] A [term FCGX_Request] handle is returned.
+
+[call [cmd fcgi] [cmd Free] [arg request] [arg close]]
+
+Frees the memory allocated by the [term FCGX_Request] structure. If the
+[arg close] close is true, the associated stream are closed too.
+
+[call [cmd fcgi] [cmd Accept_r] [arg request]]
+
+Accept a new request.
+
+[call [cmd fcgi] [cmd Finish_r] [arg request]]
+
+Finish the request.
+
+[call [cmd fcgi] [cmd GetParam] [arg request] [opt [arg name]]]
+
+Obtain value of FCGI parameter.
+
+[call [cmd fcgi] [cmd PutStr] [arg request] [arg stream] [arg string]]
+
+Write the specified [arg string] to the specified [arg stream]. Known
+[arg stream]s are [term stdout] and [term stderr].
+
+[call [cmd fcgi] [cmd GetStr] [arg request] [arg stream] [arg n]]
+
+Read [arg n] consecutive bytes from the specified [arg stream]. The string is returned. The only known value for [arg stream] is [term stdin].
+
+[call [cmd fcgi] [cmd SetExitStatus] [arg request] [arg stream] [arg status]]
+
+Set the exit [arg status] for the [arg stream].
+
+[list_end]
+
+[section Examples]
+
+[section "Bugs, ideas, feedback"]
+
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+
+Please report such at the [uri {https://github.com/jdc8/tclfcgi/issues} {Github tracker}].
+
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.
+
+[section "License"]
+
+The fcgi wrapper is relicensed under the BSD license (specifically Modified BSD
+aka New BSD aka 3-clause BSD). Check COPYING.BSD for more info.
+
+[manpage_end]
