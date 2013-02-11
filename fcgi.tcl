@@ -103,15 +103,17 @@ critcl::ccommand ::fcgi::Init {cd ip objc objv} {
 } -clientdata fcgxClientData
 
 critcl::ccommand ::fcgi::OpenSocket {cd ip objc objv} {
-    if (objc != 3) {
-	Tcl_WrongNumArgs(ip, 1, objv, "path backlog");
+    if (objc < 2 || objc > 3) {
+	Tcl_WrongNumArgs(ip, 1, objv, "path ?backlog?");
 	return TCL_ERROR;
     }
     const char* path = Tcl_GetStringFromObj(objv[1], 0);
-    int backlog = 0;
-    if (Tcl_GetIntFromObj(ip, objv[2], &backlog) != TCL_OK) {
-	Tcl_SetObjResult(ip, Tcl_NewStringObj("Wrong backlog argument, expected integer", -1));
-	return TCL_ERROR;
+    int backlog = 5;
+    if (objc > 2) {
+	if (Tcl_GetIntFromObj(ip, objv[2], &backlog) != TCL_OK) {
+	    Tcl_SetObjResult(ip, Tcl_NewStringObj("Wrong backlog argument, expected integer", -1));
+	    return TCL_ERROR;
+	}
     }
     int rt = FCGX_OpenSocket(path, backlog);
     if (rt < 0) {

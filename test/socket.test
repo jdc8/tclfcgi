@@ -4,18 +4,25 @@ package require fcgi
 
 tcltest::test OpenSocket-1 {fcgi OpenSocket} -body {
     fcgi::OpenSocket
-} -returnCodes {error} -result {wrong # args: should be "fcgi::OpenSocket path backlog"}
+} -returnCodes {error} -result {wrong # args: should be "fcgi::OpenSocket path ?backlog?"}
 
 tcltest::test OpenSocket-2 {fcgi OpenSocket} -body {
     fcgi::OpenSocket 1 2 3
-} -returnCodes {error} -result {wrong # args: should be "fcgi::OpenSocket path backlog"}
+} -returnCodes {error} -result {wrong # args: should be "fcgi::OpenSocket path ?backlog?"}
 
 tcltest::test OpenSocket-3 {fcgi OpenSocket} -body {
     fcgi::OpenSocket :9999 qwerty
 } -returnCodes {error} -result {Wrong backlog argument, expected integer}
 
-tcltest::test OpenSocket-4 {fcgi OpenSocket} -body {
+tcltest::test OpenSocket-4.0 {fcgi OpenSocket} -body {
     set sock [fcgi::OpenSocket :9999 0]
+    string is integer -strict $sock
+} -cleanup {
+    fcgi::CloseSocket $sock
+} -returnCodes {ok} -result {1}
+
+tcltest::test OpenSocket-4.1 {fcgi OpenSocket} -body {
+    set sock [fcgi::OpenSocket :9999]
     string is integer -strict $sock
 } -cleanup {
     fcgi::CloseSocket $sock
