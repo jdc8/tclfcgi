@@ -141,8 +141,8 @@ critcl::ccommand ::fcgi::CloseSocket {cd ip objc objv} {
 } -clientdata fcgxClientData
 
 critcl::ccommand ::fcgi::InitRequest {cd ip objc objv} {
-    if (objc != 3) {
-	Tcl_WrongNumArgs(ip, 1, objv, "socket flags");
+    if (objc < 2 || objc > 3) {
+	Tcl_WrongNumArgs(ip, 1, objv, "socket ?flags?");
 	return TCL_ERROR;
     }
     int socket = 0;
@@ -151,7 +151,12 @@ critcl::ccommand ::fcgi::InitRequest {cd ip objc objv} {
 	return TCL_ERROR;
     }
     int flags = 0;
-    /* TBD: Read flags */
+    if (objc > 2) {
+	if (Tcl_GetIntFromObj(ip, objv[2], &flags) != TCL_OK) {
+	    Tcl_SetObjResult(ip, Tcl_NewStringObj("Wrong flags argument, expected integer", -1));
+	    return TCL_ERROR;
+	}
+    }
     FCGX_Request* request = (FCGX_Request*)ckalloc(sizeof(FCGX_Request));
     int rt = FCGX_InitRequest(request, socket, flags);
     if (rt) {

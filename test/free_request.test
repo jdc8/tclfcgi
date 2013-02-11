@@ -14,7 +14,7 @@ tcltest::test InitRequest-2 {fcgi FreeRequest} -body {
 } -returnCodes {error} -result {request "1" does not exists}
 
 tcltest::test InitRequest-3 {fcgi FreeRequest} -setup {
-    set req [fcgi::InitRequest $fcgi_socket b]
+    set req [fcgi::InitRequest $fcgi_socket 0]
 } -body {
     fcgi::Free $req a
 } -cleanup {
@@ -22,7 +22,7 @@ tcltest::test InitRequest-3 {fcgi FreeRequest} -setup {
 } -returnCodes {error} -result {Wrong close argument, expected boolean}
 
 tcltest::test InitRequest-4 {fcgi FreeRequest} -setup {
-    set req [fcgi::InitRequest $fcgi_socket b]
+    set req [fcgi::InitRequest $fcgi_socket 0]
 } -body {
     fcgi::Free $req 1
 } -returnCodes {ok} -result {}

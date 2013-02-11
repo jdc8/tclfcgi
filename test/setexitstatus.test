@@ -4,7 +4,7 @@ package require fcgi
 
 set fcgi_socket [fcgi::OpenSocket :9999 5]
 fcgi::Init
-set req [fcgi::InitRequest $fcgi_socket b]
+set req [fcgi::InitRequest $fcgi_socket 0]
 
 tcltest::test SetExitStatus-1 {fcgi SetExitStatus} -body {
     fcgi::SetExitStatus

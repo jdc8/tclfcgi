@@ -7,18 +7,22 @@ fcgi::Init
 
 tcltest::test InitRequest-1 {fcgi InitRequest} -body {
     fcgi::InitRequest
-} -returnCodes {error} -result {wrong # args: should be "fcgi::InitRequest socket flags"}
+} -returnCodes {error} -result {wrong # args: should be "fcgi::InitRequest socket ?flags?"}
 
 tcltest::test InitRequest-2 {fcgi InitRequest} -body {
     fcgi::InitRequest 1 2 3
-} -returnCodes {error} -result {wrong # args: should be "fcgi::InitRequest socket flags"}
+} -returnCodes {error} -result {wrong # args: should be "fcgi::InitRequest socket ?flags?"}
 
-tcltest::test InitRequest-2 {fcgi InitRequest} -body {
+tcltest::test InitRequest-3 {fcgi InitRequest} -body {
     fcgi::InitRequest a b
 } -returnCodes {error} -result {Wrong socket argument, expected integer}
 
-tcltest::test InitRequest-2 {fcgi InitRequest} -body {
-    set req [fcgi::InitRequest $fcgi_socket b]
+tcltest::test InitRequest-4 {fcgi InitRequest} -body {
+    fcgi::InitRequest $fcgi_socket b
+} -returnCodes {error} -result {Wrong flags argument, expected integer}
+
+tcltest::test InitRequest-5 {fcgi InitRequest} -body {
+    set req [fcgi::InitRequest $fcgi_socket 0]
     string match "::fcgi*" $req
 } -cleanup {
     fcgi::Free $req 1
