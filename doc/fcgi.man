@@ -105,21 +105,21 @@ fcgi Init
 set req [fcgi InitRequest $sock {}]
 
 while {1} {
-    puts "### Accepr_r #############################################################################"
+    puts "### Accepr_r ###################################################################"
     fcgi Accept_r $req
     puts $req
-    puts "### GetParam #############################################################################"
+    puts "### GetParam ###################################################################"
     set pd [fcgi GetParam $req]
     dict for {k v} $pd {
 	puts "$k=$v"
     }
-    puts "### GetStr ###############################################################################"
+    puts "### GetStr #####################################################################"
     set content ""
     if {[dict exists $pd "CONTENT_LENGTH"] && [string is integer -strict [dict get $pd "CONTENT_LENGTH"]] && [dict get $pd "CONTENT_LENGTH"] > 0} {
 	set content [fcgi GetStr $req stdin [dict get $pd "CONTENT_LENGTH"]]
 	puts $content
     }
-    puts "### PutStr ###############################################################################"
+    puts "### PutStr #####################################################################"
     set C "Status: 200 OK
 Content-Type: text/html
 
@@ -138,7 +138,7 @@ Content-Type: text/html
     append C $content
     append C "</pre>\n</body>\n</html>\n"
     fcgi PutStr $req stdout $C
-    puts "### Finish_r #############################################################################"
+    puts "### Finish_r ###################################################################"
     fcgi SetExitStatus $req stdout 0
     fcgi Finish_r $req
 }}]
